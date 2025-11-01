@@ -1,28 +1,67 @@
 /**
- * Products feature store
+ * Products Model - State shape and messages
  *
- * Demonstrates:
- * - Feature-specific state management
- * - Importing from shared layer (Product type)
- * - Mock data for demonstration purposes
- * - API response validation with Zod (future-proofing)
+ * This file defines:
+ * - The shape of the products state (ProductsModel)
+ * - All possible messages that can update the state (ProductsMsg)
+ * - Initial state
+ * - Mock product data
+ *
+ * Following The Elm Architecture pattern for predictable state management
  */
 
-import { z } from 'zod'
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
 import type { Product } from '~/types/product'
-import { ProductSchema } from '~/shared/schemas/product'
-import type { ProductFilter, ProductSort } from '../types'
-import { filterProducts, sortProducts } from '../utils/filters'
+import type { ProductFilter, ProductSort } from '../../types'
 
-/** API delay simulation in milliseconds */
-const API_DELAY_MS = 500
+/**
+ * Products state model
+ */
+export interface ProductsModel {
+  /** All products */
+  products: Product[]
+  /** Loading state */
+  loading: boolean
+  /** Error message */
+  error: string | null
+  /** Current filter criteria */
+  currentFilter: ProductFilter
+  /** Current sort option */
+  currentSort: ProductSort
+}
+
+/**
+ * Initial products state
+ */
+export const initialModel: ProductsModel = {
+  products: [],
+  loading: false,
+  error: null,
+  currentFilter: {
+    search: undefined,
+    category: 'all',
+    inStock: false,
+  },
+  currentSort: 'name-asc',
+}
+
+/**
+ * Products messages - all possible actions that can modify products state
+ *
+ * These messages are dispatched by components and side effects,
+ * and handled by the pure update function
+ */
+export type ProductsMsg =
+  | { type: 'SET_FILTER'; filter: ProductFilter }
+  | { type: 'SET_SORT'; sort: ProductSort }
+  | { type: 'RESET_FILTER' }
+  | { type: 'FETCH_REQUEST' }
+  | { type: 'FETCH_SUCCESS'; products: Product[] }
+  | { type: 'FETCH_FAILURE'; error: string }
 
 /**
  * Mock product data
  */
-const MOCK_PRODUCTS: Product[] = [
+export const MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
     name: 'Wireless Headphones',
@@ -144,115 +183,3 @@ const MOCK_PRODUCTS: Product[] = [
     rating: 4.7,
   },
 ]
-
-/**
- * Products store using Pinia composition API
- */
-export const useProductsStore = defineStore('products', () => {
-  // State
-  const products = ref<Product[]>(MOCK_PRODUCTS)
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  const currentFilter = ref<ProductFilter>({
-    search: undefined,
-    category: 'all',
-    inStock: false,
-  })
-  const currentSort = ref<ProductSort>('name-asc')
-
-  // Getters
-  const filteredProducts = computed(() => {
-    let result = filterProducts(products.value, currentFilter.value)
-    result = sortProducts(result, currentSort.value)
-    return result
-  })
-
-  const productById = computed(() => (id: string) => products.value.find(p => p.id === id))
-
-  const categories = computed(() => {
-    const cats = new Set(products.value.map(p => p.category))
-    return Array.from(cats)
-  })
-
-  // Actions
-  function setFilter(filter: ProductFilter) {
-    currentFilter.value = filter
-  }
-
-  function setSort(sort: ProductSort) {
-    currentSort.value = sort
-  }
-
-  function resetFilter() {
-    currentFilter.value = {
-      search: undefined,
-      category: 'all',
-      inStock: false,
-    }
-    currentSort.value = 'name-asc'
-  }
-
-  /**
-   * Simulate fetching products from API
-   *
-   * When connected to a real API, this will validate the response
-   * to ensure data integrity and type safety
-   */
-  async function fetchProducts() {
-    loading.value = true
-    error.value = null
-
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, API_DELAY_MS))
-
-      // In a real app, this would be an API call with validation:
-      // const response = await $fetch('/api/products')
-      //
-      // // Validate API response
-      // const validationResult = z.array(ProductSchema).safeParse(response)
-      //
-      // if (!validationResult.success) {
-      //   console.error('API response validation failed:', validationResult.error.errors)
-      //   throw new Error('Invalid product data received from API')
-      // }
-      //
-      // products.value = validationResult.data
-
-      // For now, validate mock data to ensure it's correct
-      const validationResult = z.array(ProductSchema).safeParse(MOCK_PRODUCTS)
-      if (!validationResult.success) {
-        console.error('Mock data validation failed:', validationResult.error.issues)
-        throw new Error('Invalid product data')
-      }
-
-      products.value = validationResult.data
-    }
-    catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch products'
-    }
-    finally {
-      loading.value = false
-    }
-  }
-
-  return {
-    // State
-    products,
-    loading,
-    error,
-    currentFilter,
-    currentSort,
-
-    // Getters
-    filteredProducts,
-    productById,
-    categories,
-
-    // Actions
-    setFilter,
-    setSort,
-    resetFilter,
-    fetchProducts,
-  }
-})

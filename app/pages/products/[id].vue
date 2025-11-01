@@ -11,8 +11,8 @@
 import { computed } from 'vue'
 import { useHead } from '#app'
 import { useRoute, useRouter } from 'vue-router'
-import { useProductsStore } from '~/features/products/stores/products'
-import { useCartStore } from '~/features/cart/stores/cart'
+import { useProductsStore } from '~/features/products/stores/products/products'
+import { useCartStore } from '~/features/cart/stores/cart/cart'
 import { formatCurrency } from '~/utils/currency'
 
 const route = useRoute()
@@ -21,7 +21,7 @@ const productsStore = useProductsStore()
 const cartStore = useCartStore()
 
 const productId = computed(() => route.params.id as string)
-const product = computed(() => productsStore.productById(productId.value))
+const product = computed(() => productsStore.state.productById(productId.value))
 
 const pageTitle = computed(() => {
   if (product.value) {
@@ -40,7 +40,7 @@ function goBack() {
 
 function addToCart() {
   if (product.value) {
-    cartStore.addItem(product.value)
+    cartStore.dispatch({ type: 'ADD_ITEM', product: product.value })
   }
 }
 
@@ -48,7 +48,7 @@ const inCart = computed(() => {
   if (!product.value) {
     return false
   }
-  return !!cartStore.itemInCart(product.value.id)
+  return !!cartStore.state.itemInCart(product.value.id)
 })
 </script>
 

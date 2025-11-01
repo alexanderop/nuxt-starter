@@ -12,8 +12,8 @@ import { onMounted } from 'vue'
 import { useHead } from '#app'
 import { UMain, UContainer } from '#components'
 import type { Product } from '~/types/product'
-import { useCartStore } from '~/features/cart/stores/cart'
-import { useProductsStore } from '~/features/products/stores/products'
+import { useCartStore } from '~/features/cart/stores/cart/cart'
+import { useProductsStore } from '~/features/products/stores/products/products'
 import CartSummary from '~/features/cart/components/cartSummary.vue'
 import ProductFilters from '~/features/products/components/productFilters.vue'
 import ProductGrid from '~/features/products/components/productGrid.vue'
@@ -37,7 +37,7 @@ onMounted(async () => {
 })
 
 function handleAddToCart(product: Product) {
-  cartStore.addItem(product)
+  cartStore.dispatch({ type: 'ADD_ITEM', product })
 }
 </script>
 
@@ -59,9 +59,9 @@ function handleAddToCart(product: Product) {
         <!-- Filters sidebar -->
         <aside class="lg:sticky lg:top-24">
           <ProductFilters
-            :filter="productsStore.currentFilter"
-            :sort="productsStore.currentSort"
-            :categories="productsStore.categories"
+            :filter="productsStore.state.currentFilter"
+            :sort="productsStore.state.currentSort"
+            :categories="productsStore.state.categories"
             @update:filter="productsStore.setFilter"
             @update:sort="productsStore.setSort"
             @reset="productsStore.resetFilter"
@@ -71,8 +71,8 @@ function handleAddToCart(product: Product) {
         <!-- Products grid -->
         <main class="min-w-0">
           <ProductGrid
-            :products="productsStore.filteredProducts"
-            :loading="productsStore.loading"
+            :products="productsStore.state.filteredProducts"
+            :loading="productsStore.state.loading"
             @add-to-cart="handleAddToCart"
           />
         </main>

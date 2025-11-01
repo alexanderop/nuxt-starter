@@ -8,7 +8,7 @@
 import { UCard, UButton, UEmpty, USeparator } from '#components'
 import { useRouter } from 'vue-router'
 import { formatCurrency } from '~/utils/currency'
-import { useCartStore } from '../stores/cart'
+import { useCartStore } from '../stores/cart/cart'
 import CartItem from './cartItem.vue'
 
 const cartStore = useCartStore()
@@ -27,7 +27,7 @@ function checkout() {
 <template>
   <div class="w-full">
     <UEmpty
-      v-if="cartStore.isEmpty"
+      v-if="cartStore.state.isEmpty"
       icon="i-lucide-shopping-cart"
       title="Your cart is empty"
       description="Add some products to get started"
@@ -50,16 +50,16 @@ function checkout() {
     >
       <div class="flex flex-col gap-4">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Shopping Cart ({{ cartStore.itemCount }} items)
+          Shopping Cart ({{ cartStore.state.itemCount }} items)
         </h2>
         <div class="flex flex-col gap-3">
           <CartItem
-            v-for="item in cartStore.items"
+            v-for="item in cartStore.state.items"
             :key="item.product.id"
             :item="item"
-            @increment="cartStore.incrementItem(item.product.id)"
-            @decrement="cartStore.decrementItem(item.product.id)"
-            @remove="cartStore.removeItem(item.product.id)"
+            @increment="cartStore.dispatch({ type: 'INCREMENT_ITEM', productId: item.product.id })"
+            @decrement="cartStore.dispatch({ type: 'DECREMENT_ITEM', productId: item.product.id })"
+            @remove="cartStore.dispatch({ type: 'REMOVE_ITEM', productId: item.product.id })"
           />
         </div>
       </div>
@@ -75,19 +75,19 @@ function checkout() {
           <div class="flex flex-col gap-3">
             <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
               <span>Subtotal</span>
-              <span>{{ formatCurrency(cartStore.subtotal) }}</span>
+              <span>{{ formatCurrency(cartStore.state.subtotal) }}</span>
             </div>
 
             <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
               <span>Tax (10%)</span>
-              <span>{{ formatCurrency(cartStore.tax) }}</span>
+              <span>{{ formatCurrency(cartStore.state.tax) }}</span>
             </div>
 
             <USeparator />
 
             <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-gray-100">
               <span>Total</span>
-              <span>{{ formatCurrency(cartStore.total) }}</span>
+              <span>{{ formatCurrency(cartStore.state.total) }}</span>
             </div>
 
             <UButton

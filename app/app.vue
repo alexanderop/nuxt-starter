@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { NuxtRouteAnnouncer, NuxtPage, UApp, UHeader, UButton, UColorModeButton, UBadge, UTooltip } from '#components'
-import { useCartStore } from '~/features/cart/stores/cart'
+import { useCartStore } from '~/features/cart/stores/cart/cart'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const cartStore = useCartStore()
 const router = useRouter()
 
-const cartItemCount = computed(() => cartStore.itemCount)
+const cartItemCount = computed(() => cartStore.state.itemCount)
 
 function goToCart() {
   router.push('/shoppingCart')
