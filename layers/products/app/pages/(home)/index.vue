@@ -70,6 +70,7 @@ function handleAddToCart(product: Product) {
           <ProductGrid
             :products="(productsStore.state.filteredProducts as any)"
             :loading="productsStore.state.loading"
+            :in-cart-checker="(productId) => !!cartStore.state.itemInCart(productId)"
             @add-to-cart="handleAddToCart"
           />
         </main>

@@ -13,11 +13,12 @@ import { formatCurrency } from '#layers/shared/app/utils/currency'
 
 interface Props {
   product: Product
+  inCart?: boolean  // NEW: indicates if product is in cart
 }
 
 type Emits = (e: 'add-to-cart', product: Product) => void
 
-const { product } = defineProps<Props>()
+const { product, inCart = false } = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 function handleAddToCart(event: MouseEvent) {
@@ -46,6 +47,13 @@ function handleAddToCart(event: MouseEvent) {
           v-if="product.stock === 0"
           label="Out of Stock"
           color="error"
+          class="absolute top-2 right-2"
+        />
+        <UBadge
+          v-else-if="inCart"
+          label="In Cart"
+          color="success"
+          icon="i-lucide-check"
           class="absolute top-2 right-2"
         />
       </div>
@@ -79,8 +87,9 @@ function handleAddToCart(event: MouseEvent) {
         type="button"
         block
         :disabled="product.stock === 0"
-        :label="product.stock === 0 ? 'Out of Stock' : 'Add to Cart'"
-        icon="i-lucide-shopping-cart"
+        :label="product.stock === 0 ? 'Out of Stock' : inCart ? 'Add Another' : 'Add to Cart'"
+        :icon="inCart ? 'i-lucide-check' : 'i-lucide-shopping-cart'"
+        :color="inCart ? 'success' : 'primary'"
         @click="handleAddToCart"
       />
     </template>

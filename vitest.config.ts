@@ -1,10 +1,19 @@
 import { defineConfig } from 'vitest/config'
 import { defineVitestProject } from '@nuxt/test-utils/config'
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   test: {
     projects: [
       {
+        resolve: {
+          alias: {
+            '~/test': fileURLToPath(new URL('./layers/shared/app/test', import.meta.url)),
+            '#layers/shared': fileURLToPath(new URL('./layers/shared', import.meta.url)),
+            '#layers/products': fileURLToPath(new URL('./layers/products', import.meta.url)),
+            '#layers/cart': fileURLToPath(new URL('./layers/cart', import.meta.url)),
+          },
+        },
         test: {
           name: 'unit',
           environment: 'node',

@@ -140,6 +140,7 @@ We use Playwright. We only test that the real app works for a user.
 | **Playwright**           | E2E tests              | Stable, fast, network mocking       |
 | **happy-dom**            | DOM environment        | Faster than jsdom for our use case  |
 | **fast-check**           | Property based tests   | Finds edge cases in pure logic      |
+| **@anatine/zod-mock**    | Zod-driven mock data   | Generates valid mocks from schemas  |
 
 ### 4.2 API Mocking
 
@@ -158,6 +159,61 @@ We use Playwright. We only test that the real app works for a user.
 * Prefer real Nitro test data
 * Or use Playwright `page.route(...)` for selective mocking
 * MSW is not recommended here (Nuxt SSR creates problems, native Nuxt and Playwright options are enough)
+
+### 4.3 Test Utilities and Mock Generation
+
+**Zod-Driven Mock Generation**
+
+This project uses `@anatine/zod-mock` to generate test data automatically from Zod schemas. This ensures mocks always match runtime validation and prevents schema drift.
+
+**Location:** `layers/shared/app/test/mocks.ts`
+
+**Available Functions:**
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `generateProduct(overrides?)` | Generate a valid Product | `generateProduct({ price: 1999 })` |
+| `generateProducts(count)` | Generate array of Products | `generateProducts(10)` |
+| `generateCartItem(overrides?)` | Generate a valid CartItem | `generateCartItem({ quantity: 3 })` |
+| `generateCartItems(count)` | Generate array of CartItems | `generateCartItems(5)` |
+| `generateCartItemWithPrice(price, qty)` | For exact calculations tests | `generateCartItemWithPrice(1999, 2)` |
+| `generateFilter(overrides?)` | Generate ProductFilter | `generateFilter({ category: 'electronics' })` |
+| `generateCategory()` | Generate ProductCategory enum | `generateCategory()` |
+| `generateSort()` | Generate ProductSort enum | `generateSort()` |
+
+**Usage in Tests:**
+
+```typescript
+import { generateProduct, generateCartItem } from '~/test/mocks.js'
+
+// Unit test example
+it('calculates subtotal correctly', () => {
+  const item = generateCartItemWithPrice(1999, 2)
+  expect(calculateSubtotal([item])).toBe(3998)
+})
+
+// With overrides for specific test cases
+it('filters expensive products', () => {
+  const products = [
+    generateProduct({ price: 999 }),    // cheap
+    generateProduct({ price: 99999 })   // expensive
+  ]
+  const result = filterProducts(products, { priceRange: { min: 10000, max: 100000 } })
+  expect(result).toHaveLength(1)
+})
+```
+
+**Benefits:**
+
+✅ Mocks always valid against Zod schemas
+✅ Schema changes auto-update mocks
+✅ No manual mock maintenance
+✅ Type-safe with proper TypeScript inference
+✅ Eliminates ~200 lines of manual mock code
+
+**Import Alias:**
+
+Tests use the `~/test/mocks.js` alias (configured in `vitest.config.ts`) to import test utilities from any layer.
 
 ---
 

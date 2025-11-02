@@ -13,11 +13,12 @@ import ProductCard from './productCard.vue'
 interface Props {
   products: Product[]
   loading?: boolean
+  inCartChecker?: (productId: string) => boolean  // NEW: function to check cart state
 }
 
 type Emits = (eventName: 'add-to-cart', product: Product) => void
 
-const { products, loading = false } = defineProps<Props>()
+const { products, loading = false, inCartChecker } = defineProps<Props>()
 
 const emit = defineEmits<Emits>()
 
@@ -55,6 +56,7 @@ function handleAddToCart(product: Product) {
         v-for="product in products"
         :key="product.id"
         :product="product"
+        :in-cart="inCartChecker ? inCartChecker(product.id) : false"
         @add-to-cart="handleAddToCart"
       />
     </div>
