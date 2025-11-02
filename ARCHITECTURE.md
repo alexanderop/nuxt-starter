@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
+- [Layer-Based vs Feature-Based Architecture](#layer-based-vs-feature-based-architecture)
 - [Core Principles](#core-principles)
 - [Layer Structure](#layer-structure)
 - [Layer Communication Patterns](#layer-communication-patterns)
@@ -22,6 +23,163 @@
 ## Overview
 
 This Nuxt 4 app uses **layer-based architecture** to organize code by business features. Each layer is self-contained with its own components, stores, schemas, and utilities. Layers provide natural boundaries for separation of concerns.
+
+## Layer-Based vs Feature-Based Architecture
+
+### Conceptual Equivalence
+
+Nuxt **layers** are conceptually identical to **features** in traditional feature-based architectures:
+
+| Traditional Feature-Based | Nuxt Layer-Based | Purpose |
+|---------------------------|------------------|---------|
+| `src/features/products/` | `layers/products/` | Product catalog feature |
+| `src/features/cart/` | `layers/cart/` | Shopping cart feature |
+| `src/shared/` | `layers/shared/` | Shared utilities & UI |
+
+Both approaches share the same **core principles**:
+- ✅ **Feature isolation** - Code organized by business domain
+- ✅ **Unidirectional dependency flow** - One-way imports
+- ✅ **Explicit imports** - No auto-imports, clarity over magic
+- ✅ **Colocation** - Related code lives together
+
+### Key Differences
+
+#### 1. Folder Organization
+
+**Traditional:**
+```
+src/features/products/
+├── api/
+├── components/
+├── hooks/
+├── stores/
+├── types/
+└── utils/
+```
+
+**Nuxt Layers:**
+```
+layers/products/
+├── nuxt.config.ts    # Layer metadata
+└── app/
+    ├── components/
+    ├── pages/         # Route pages
+    ├── schemas/       # Zod schemas (runtime validation)
+    ├── stores/
+    └── utils/
+```
+
+**Differences:**
+- Nuxt adds `app/` nesting (framework convention)
+- Each layer has its own `nuxt.config.ts`
+- API routes in root `server/` directory (not per-layer)
+- Uses Zod `schemas/` instead of TypeScript `types/`
+- Includes `pages/` for routes (file-based routing)
+
+#### 2. Boundary Enforcement
+
+**Traditional (ESLint-based):**
+```javascript
+// Prevented by ESLint rules (lint-time)
+'import/no-restricted-paths': ['error', {
+  zones: [
+    {
+      target: './src/features/products',
+      from: './src/features/cart'
+    }
+  ]
+}]
+```
+- ⚠️ Enforced at **lint-time**
+- Can be bypassed (caught in CI/pre-commit)
+- Helpful error messages
+
+**Nuxt Layers (Natural + ESLint):**
+```typescript
+// Prevented by Nuxt layer system (compile-time)
+import { useProductsStore } from '#layers/products/...'
+// ❌ Error: Cannot find module (TypeScript)
+```
+- ✅ **Compile-time** enforcement (primary)
+- ✅ **Lint-time** enforcement (secondary, via ESLint)
+- **Defense in depth** - caught at multiple stages
+- Build fails immediately if violated
+
+#### 3. Import Paths
+
+**Traditional:**
+```typescript
+// Feature imports
+import { Product } from '@/features/products/types/product'
+import { formatCurrency } from '@/shared/utils/currency'
+```
+
+**Nuxt Layers:**
+```typescript
+// Layer imports
+import type { Product } from '#layers/products/app/schemas/product'
+import { formatCurrency } from '#layers/shared/app/utils/currency'
+```
+
+- `#layers/` prefix instead of `@/features/`
+- Includes `app/` in path
+- Same verbosity, similar patterns
+
+#### 4. Runtime Validation
+
+**Traditional (TypeScript-only):**
+```typescript
+// types/product.ts
+export interface Product {
+  id: string
+  name: string
+  price: number
+}
+// ⚠️ Compile-time only, no runtime validation
+```
+
+**Nuxt Layers (Zod-first):**
+```typescript
+// schemas/product.ts
+export const ProductSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  price: z.number().positive(),
+})
+export type Product = z.infer<typeof ProductSchema>
+// ✅ Compile-time + runtime validation
+```
+
+### Advantages of Nuxt Layer Approach
+
+1. **Stronger Enforcement** - Compile-time + lint-time boundaries
+2. **Runtime Safety** - Zod validation at all boundaries
+3. **Modularity** - Layers can be published as npm packages
+4. **Framework Integration** - Native Nuxt feature (file-based routing, etc.)
+5. **Distributed Config** - Each layer is self-contained
+
+### When to Use Each
+
+**Use Traditional Feature-Based When:**
+- Not using Nuxt/meta-framework
+- Framework doesn't support layers
+- Want flatter directory structure
+
+**Use Nuxt Layer-Based When:**
+- Using Nuxt 3/4
+- Want stronger boundary enforcement
+- Need publishable/reusable modules
+- Prefer runtime validation (Zod)
+
+### Summary
+
+Nuxt layers **are** features - just with:
+- Framework-specific conventions (`app/`, `#layers/`)
+- Stronger enforcement mechanisms
+- Better modularity and reusability
+- Built-in runtime validation patterns
+
+The **architectural principles remain identical**: feature isolation, unidirectional flow, and explicit dependencies.
 
 ## Core Principles
 
@@ -368,13 +526,15 @@ graph LR
 **ESLint (Secondary - Custom Rules):**
 - `eslint.config.mjs` - Vue component rules, complexity checks
 - `vue/no-undef-components` - Critical (catches missing imports)
-- Architecture boundary rules commented (layers enforce naturally)
+- `import/no-restricted-paths` - Architecture boundary enforcement (defense in depth)
 
-### Layer Boundaries
+### Layer Boundaries (Defense in Depth)
 
-**Natural Enforcement:**
+This project uses **two layers of boundary enforcement**:
+
+#### 1. Compile-time (Primary - Nuxt Layers)
 ```typescript
-// ❌ This won't work - layers can't import from each other
+// ❌ This won't work - TypeScript cannot resolve cross-layer imports
 import { useProductsStore } from '#layers/products/...'
 // Error: Cannot find module (Nuxt layer isolation)
 
@@ -382,7 +542,32 @@ import { useProductsStore } from '#layers/products/...'
 import { formatCurrency } from '#layers/shared/...'
 ```
 
-Nuxt layers **naturally prevent** cross-layer imports. No ESLint rules needed!
+**Nuxt layers naturally prevent** cross-layer imports at **compile-time**. Build fails immediately.
+
+#### 2. Lint-time (Secondary - ESLint)
+
+ESLint provides early feedback with `import/no-restricted-paths` rules (eslint.config.mjs:155-198):
+
+**Prevented:**
+- Products layer cannot import from cart layer
+- Cart layer cannot import from products layer (except schemas)
+- Layers cannot import from app
+- Shared layer cannot import from any layer
+
+**Allowed:**
+- Any layer can import from shared layer
+- Cart can import product schemas (data contracts only)
+- App can import from any layer
+
+**Unidirectional Flow:**
+```
+shared ← products ← cart ← app
+```
+
+**Why Both?**
+- **Compile-time**: Strongest enforcement, prevents broken builds
+- **Lint-time**: Faster feedback in editor/on save, better DX
+- **Together**: Defense in depth with clear error messages at multiple stages
 
 ## When to Create a New Layer
 

@@ -33,6 +33,7 @@ Import rules:
 * Layers can import from `shared`
 * `cart` can import product schemas (contracts), not product stores
 * App can import from any layer
+* Cross-layer imports are prevented by both compile-time (Nuxt) and lint-time (ESLint) enforcement
 
 ## Project Commands
 
@@ -57,6 +58,43 @@ You must keep linting consistent.
 4. If you add a general rule, add it to oxlint
 5. If you add a Vue or architecture rule, add it to ESLint
 6. Never define the same rule in both files
+
+## Boundary Enforcement (Defense in Depth)
+
+This project uses **two layers of boundary enforcement**:
+
+### 1. Compile-time (Nuxt Layers - Primary)
+Nuxt's layer system naturally prevents cross-layer imports:
+* TypeScript **cannot resolve** imports like `#layers/products` from the `cart` layer
+* Build **fails immediately** if you try to violate layer boundaries
+* This is the **strongest** form of enforcement
+
+### 2. Lint-time (ESLint - Secondary)
+ESLint provides additional feedback during development:
+* `import/no-restricted-paths` rules catch violations early (in editor or on save)
+* Helpful error messages explain the violation
+* Catches issues before running TypeScript compiler
+
+### Enforced Rules (eslint.config.mjs:152-198)
+```text
+✅ Allowed:
+  - Any layer can import from shared layer
+  - Cart can import product schemas (contracts)
+  - App can import from any layer
+
+❌ Prevented:
+  - Products cannot import from cart
+  - Cart cannot import from products (except schemas)
+  - Layers cannot import from app
+  - Shared cannot import from any layer
+
+Flow: shared ← products ← cart ← app
+```
+
+### Why Both?
+* **Compile-time**: Catches all violations, prevents broken builds
+* **Lint-time**: Faster feedback loop, better DX in editor
+* Together: **Defense in depth** for architecture boundaries
 
 ## Development Workflow
 

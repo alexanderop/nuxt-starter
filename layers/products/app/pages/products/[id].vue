@@ -96,7 +96,9 @@ const inCart = computed(() => {
         <div class="grid sm:grid-cols-2 lg:grid-cols-[40%_60%] gap-6 sm:gap-8">
           <!-- Left: Product Image -->
           <div class="sm:p-8 lg:p-10 max-w-full">
-            <ProductDetailImage :product="product" class="max-w-full" />
+            <ProductDetailImage
+:product="product"
+class="max-w-full" />
           </div>
 
           <!-- Right: Product Info -->

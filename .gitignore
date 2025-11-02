@@ -19,6 +19,10 @@ logs
 .idea
 .playwright
 
+# Test coverage
+coverage/
+.vitest/
+
 # VSCode (allow settings.json for team consistency)
 .vscode/*
 !.vscode/settings.json

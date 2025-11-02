@@ -19,15 +19,13 @@ interface Props {
   class?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  class: '',
-})
+const { product, class: _className = '' } = defineProps<Props>()
 
 // Multiple product images (currently just using same image, can be extended)
 const images = computed(() => [
-  props.product.image,
-  props.product.image, // In real app: different angles
-  props.product.image, // In real app: detail shots
+  product.image,
+  product.image, // In real app: different angles
+  product.image, // In real app: detail shots
 ])
 
 const activeIndex = ref(0)
@@ -48,7 +46,7 @@ function openZoom() {
 </script>
 
 <template>
-  <div :class="['relative w-full', props.class]">
+  <div :class="['relative w-full', className]">
     <!-- Loading skeleton -->
     <div
       v-if="isLoading"
