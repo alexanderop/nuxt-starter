@@ -4,9 +4,10 @@
  *
  * Displays a single product in a card format using Nuxt UI components
  * Uses shared utilities (formatCurrency) from shared layer
+ * Entire card is clickable to navigate to product detail page
  */
 
-import { UCard, UButton, UBadge } from '#components'
+import { NuxtLink, UCard, UButton, UBadge } from '#components'
 import type { Product } from '../schemas/product'
 import { formatCurrency } from '#layers/shared/app/utils/currency'
 
@@ -16,16 +17,23 @@ interface Props {
 
 type Emits = (e: 'add-to-cart', product: Product) => void
 
-const props = defineProps<Props>()
+const { product } = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-function handleAddToCart() {
-  emit('add-to-cart', props.product)
+function handleAddToCart(event: MouseEvent) {
+  // Prevent navigation when clicking "Add to Cart" button
+  event.preventDefault()
+  event.stopPropagation()
+  emit('add-to-cart', product)
 }
 </script>
 
 <template>
-  <UCard class="hover:shadow-lg transition-shadow duration-200">
+  <NuxtLink
+    :to="`/products/${product.id}`"
+    class="block cursor-pointer"
+  >
+    <UCard class="hover:shadow-lg transition-shadow duration-200 h-full">
     <template #header>
       <div class="relative w-full h-48 overflow-hidden bg-gray-100 dark:bg-gray-800 rounded-t-lg">
         <NuxtImg
@@ -77,4 +85,5 @@ function handleAddToCart() {
       />
     </template>
   </UCard>
+  </NuxtLink>
 </template>

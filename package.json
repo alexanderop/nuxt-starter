@@ -9,8 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "lint": "oxlint && eslint .",
-    "lint:oxlint": "oxlint",
+    "lint": "oxlint --type-aware && eslint .",
+    "lint:oxlint": "oxlint --type-aware",
     "lint:eslint": "eslint ."
   },
   "dependencies": {
@@ -31,6 +31,7 @@
   "devDependencies": {
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-oxlint": "^1.25.0",
-    "oxlint": "^1.25.0"
+    "oxlint": "^1.25.0",
+    "oxlint-tsgolint": "^0.4.0"
   }
 }

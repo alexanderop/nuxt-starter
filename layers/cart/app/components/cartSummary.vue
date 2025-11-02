@@ -1,10 +1,4 @@
 <script setup lang="ts">
-/**
- * CartSummary component (Cart Layer)
- *
- * Mini cart widget showing total (cart button moved to header)
- */
-
 import { UButton, UBadge } from '#components'
 import { useRouter } from 'vue-router'
 import { formatCurrency } from '#layers/shared/app/utils/currency'

@@ -33,3 +33,5 @@ CLAUDE.local.md
 .claude/settings.local.json
 *.swp
 *.swo
+
+.playwright-mcp/*

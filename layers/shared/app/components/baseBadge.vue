@@ -14,9 +14,7 @@ interface Props {
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger'
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  variant: 'primary',
-})
+const { value, variant = 'primary' } = defineProps<Props>()
 
 const badgeClass = computed(() => {
   const variants = {
@@ -27,7 +25,7 @@ const badgeClass = computed(() => {
     warning: 'bg-yellow-500 text-black',
   }
 
-  return variants[props.variant]
+  return variants[variant]
 })
 </script>
 

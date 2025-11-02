@@ -5,20 +5,26 @@
  * Demonstrates:
  * - Dynamic routing with [id] parameter
  * - Composition of products and cart layers
- * - Shared data access through stores
+ * - Component-based architecture for better maintainability
+ * - 40/60 desktop layout split
  */
 
 import { computed } from 'vue'
-import { useHead } from '#app'
+import { useHead, useAsyncData } from '#app'
 import { useRoute, useRouter } from 'vue-router'
+import { UButton, UEmpty } from '#components'
 import { useProductsStore } from '#layers/products/app/stores/products/products'
 import { useCartStore } from '#layers/cart/app/stores/cart/cart'
-import { formatCurrency } from '#layers/shared/app/utils/currency'
+import ProductDetailImage from '#layers/products/app/components/productDetailImage.vue'
+import ProductDetailInfo from '#layers/products/app/components/productDetailInfo.vue'
 
 const route = useRoute()
 const router = useRouter()
 const productsStore = useProductsStore()
 const cartStore = useCartStore()
+
+// Fetch products on SSR to ensure product data is available
+await useAsyncData('products', () => productsStore.fetchProducts())
 
 const productId = computed(() => route.params.id as string)
 const product = computed(() => productsStore.state.productById(productId.value))
@@ -53,318 +59,56 @@ const inCart = computed(() => {
 </script>
 
 <template>
-  <div class="product-page">
-    <div class="container">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 lg:p-12">
+    <div class="max-w-7xl mx-auto">
       <!-- Header with back button -->
-      <header class="header">
-        <button
+      <header class="mb-6 sm:mb-8">
+        <UButton
           type="button"
-          class="back-btn"
+          variant="ghost"
+          icon="i-lucide-arrow-left"
+          label="Back to Shop"
           @click="goBack"
-        >
-          ← Back to Shop
-        </button>
+        />
       </header>
 
       <!-- Product not found -->
-      <div
+      <UEmpty
         v-if="!product"
-        class="not-found"
+        title="Product Not Found"
+        description="The product you're looking for doesn't exist."
+        icon="i-lucide-package-x"
       >
-        <h1 class="not-found-title">
-          Product Not Found
-        </h1>
-        <p class="not-found-text">
-          The product you're looking for doesn't exist.
-        </p>
-        <button
-          type="button"
-          class="back-to-shop-btn"
-          @click="goBack"
-        >
-          Back to Shop
-        </button>
-      </div>
-
-      <!-- Product details -->
-      <main
-        v-else
-        class="product-detail"
-      >
-        <div class="product-image-container">
-          <NuxtImg
-            :src="product.image"
-            :alt="product.name"
-            class="product-image"
-          />
-        </div>
-
-        <div class="product-info">
-          <div class="product-category">
-            {{ product.category.charAt(0).toUpperCase() + product.category.slice(1) }}
-          </div>
-
-          <h1 class="product-name">
-            {{ product.name }}
-          </h1>
-
-          <div
-            v-if="product.rating"
-            class="product-rating"
-          >
-            ⭐ {{ product.rating.toFixed(1) }} / 5.0
-          </div>
-
-          <p class="product-description">
-            {{ product.description }}
-          </p>
-
-          <div class="product-price">
-            {{ formatCurrency(product.price) }}
-          </div>
-
-          <div class="product-stock">
-            <span
-              v-if="product.stock > 0"
-              class="in-stock"
-            >
-              ✓ {{ product.stock }} in stock
-            </span>
-            <span
-              v-else
-              class="out-of-stock"
-            >
-              ✕ Out of stock
-            </span>
-          </div>
-
-          <button
+        <template #footer>
+          <UButton
             type="button"
-            class="add-to-cart-btn"
-            :disabled="product.stock === 0"
-            @click="addToCart"
-          >
-            {{ product.stock === 0 ? 'Out of Stock' : inCart ? 'Add Another to Cart' : 'Add to Cart' }}
-          </button>
+            label="Back to Shop"
+            @click="goBack"
+          />
+        </template>
+      </UEmpty>
 
-          <div
-            v-if="inCart"
-            class="in-cart-notice"
-          >
-            ✓ This item is in your cart
+      <!-- Product details container -->
+      <div
+        v-else
+        class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div class="grid sm:grid-cols-2 lg:grid-cols-[40%_60%] gap-6 sm:gap-8">
+          <!-- Left: Product Image -->
+          <div class="sm:p-8 lg:p-10 max-w-full">
+            <ProductDetailImage :product="product" class="max-w-full" />
+          </div>
+
+          <!-- Right: Product Info -->
+          <div class="p-6 sm:p-8 lg:p-10 bg-gray-50 dark:bg-gray-900/50">
+            <ProductDetailInfo
+              :product="product"
+              :in-cart="inCart"
+              @add-to-cart="addToCart"
+            />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.product-page {
-  min-height: 100vh;
-  background: #f9fafb;
-  padding: 24px 16px;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.header {
-  margin-bottom: 32px;
-}
-
-.back-btn {
-  padding: 8px 16px;
-  background: transparent;
-  color: #3b82f6;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.back-btn:hover {
-  background: #eff6ff;
-}
-
-.not-found {
-  text-align: center;
-  padding: 64px 24px;
-}
-
-.not-found-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 12px 0;
-}
-
-.not-found-text {
-  font-size: 16px;
-  color: #6b7280;
-  margin: 0 0 24px 0;
-}
-
-.back-to-shop-btn {
-  padding: 12px 24px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.back-to-shop-btn:hover {
-  background: #2563eb;
-}
-
-.product-detail {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 48px;
-}
-
-.product-image-container {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #f3f4f6;
-}
-
-.product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-info {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.product-category {
-  display: inline-block;
-  width: fit-content;
-  padding: 6px 12px;
-  background: #eff6ff;
-  color: #3b82f6;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.product-name {
-  font-size: 32px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0;
-  line-height: 1.2;
-}
-
-.product-rating {
-  font-size: 16px;
-  color: #6b7280;
-}
-
-.product-description {
-  font-size: 16px;
-  color: #6b7280;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.product-price {
-  font-size: 36px;
-  font-weight: 800;
-  color: #111827;
-  margin: 8px 0;
-}
-
-.product-stock {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.in-stock {
-  color: #059669;
-}
-
-.out-of-stock {
-  color: #dc2626;
-}
-
-.add-to-cart-btn {
-  width: 100%;
-  padding: 16px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-top: 8px;
-}
-
-.add-to-cart-btn:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-.add-to-cart-btn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
-
-.in-cart-notice {
-  padding: 12px 16px;
-  background: #d1fae5;
-  color: #065f46;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
-}
-
-@media (max-width: 1024px) {
-  .product-detail {
-    grid-template-columns: 1fr;
-    padding: 32px;
-    gap: 32px;
-  }
-}
-
-@media (max-width: 640px) {
-  .product-page {
-    padding: 16px 12px;
-  }
-
-  .product-detail {
-    padding: 24px;
-    gap: 24px;
-  }
-
-  .product-name {
-    font-size: 24px;
-  }
-
-  .product-price {
-    font-size: 28px;
-  }
-}
-</style>

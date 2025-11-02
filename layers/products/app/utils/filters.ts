@@ -24,7 +24,7 @@ export function filterProducts(products: Product[], filter: ProductFilter): Prod
   let result = products
 
   // Filter by search query
-  if (filter.search && filter.search.trim()) {
+  if (filter.search !== undefined && filter.search !== null && filter.search.trim() !== '') {
     const query = filter.search.toLowerCase()
     result = result.filter(
       p =>
@@ -50,7 +50,7 @@ export function filterProducts(products: Product[], filter: ProductFilter): Prod
   }
 
   // Filter by stock availability
-  if (filter.inStock) {
+  if (filter.inStock === true) {
     result = result.filter(p => p.stock > MIN_STOCK_AVAILABLE)
   }
 

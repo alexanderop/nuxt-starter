@@ -46,10 +46,12 @@ export function getItem<T>(key: string): T | null {
 
   try {
     const item = localStorage.getItem(key)
-    if (!item) {
+    if (item === null || item === '') {
       return null
     }
-    return JSON.parse(item) as T
+    const parsed: unknown = JSON.parse(item)
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- deprecated function, use getValidatedItem instead
+    return parsed as T
   }
   catch {
     return null
@@ -88,11 +90,11 @@ export function getValidatedItem<T extends z.ZodTypeAny>(
 
   try {
     const item = localStorage.getItem(key)
-    if (!item) {
+    if (item === null || item === '') {
       return null
     }
 
-    const parsed = JSON.parse(item)
+    const parsed: unknown = JSON.parse(item)
     const result = schema.safeParse(parsed)
 
     if (result.success) {

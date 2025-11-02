@@ -23,18 +23,18 @@ type UpdateSortEmit = (eventName: 'update:sort', sort: ProductSort) => void
 type ResetEmit = (eventName: 'reset') => void
 type Emits = UpdateFilterEmit & UpdateSortEmit & ResetEmit
 
-const props = defineProps<Props>()
+const { filter, sort, categories } = defineProps<Props>()
 
 const emit = defineEmits<Emits>()
 
-const searchQuery = ref(props.filter.search || '')
-const selectedCategory = ref<ProductCategory | 'all'>(props.filter.category || 'all')
-const inStockOnly = ref(props.filter.inStock || false)
-const selectedSort = ref(props.sort)
+const searchQuery = ref(filter.search || '')
+const selectedCategory = ref<ProductCategory | 'all'>(filter.category || 'all')
+const inStockOnly = ref(filter.inStock || false)
+const selectedSort = ref(sort)
 
 const categoryItems = computed<SelectItem[]>(() => [
   { label: 'All Categories', value: 'all' },
-  ...props.categories.map(cat => ({
+  ...categories.map(cat => ({
     label: cat.charAt(0).toUpperCase() + cat.slice(1),
     value: cat,
   })),
@@ -58,12 +58,14 @@ function applyFilters() {
 
   const filterResult = ProductFilterSchema.safeParse(filterData)
   if (!filterResult.success) {
+    // eslint-disable-next-line no-console
     console.error('Invalid filter data:', filterResult.error.issues)
     return
   }
 
   const sortResult = ProductSortSchema.safeParse(selectedSort.value)
   if (!sortResult.success) {
+    // eslint-disable-next-line no-console
     console.error('Invalid sort value:', sortResult.error.issues)
     return
   }

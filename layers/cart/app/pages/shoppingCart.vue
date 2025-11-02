@@ -1,10 +1,4 @@
 <script setup lang="ts">
-/**
- * Cart page
- *
- * Demonstrates composition of the cart layer
- */
-
 import { useHead } from '#app'
 import { useRouter } from 'vue-router'
 import { UMain, UContainer, UButton } from '#components'
@@ -30,7 +24,6 @@ function goBack() {
 <template>
   <UMain>
     <UContainer class="py-6 sm:py-8">
-      <!-- Header with back button -->
       <header class="mb-8">
         <UButton
           type="button"
@@ -46,7 +39,6 @@ function goBack() {
         </h1>
       </header>
 
-      <!-- Cart content -->
       <main>
         <CartList />
       </main>

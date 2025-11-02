@@ -17,9 +17,7 @@ interface Props {
 
 type Emits = (eventName: 'add-to-cart', product: Product) => void
 
-withDefaults(defineProps<Props>(), {
-  loading: false,
-})
+const { products, loading = false } = defineProps<Props>()
 
 const emit = defineEmits<Emits>()
 

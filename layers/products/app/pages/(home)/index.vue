@@ -8,8 +8,7 @@
  * - Both layers work together without direct dependencies
  */
 
-import { onMounted } from 'vue'
-import { useHead } from '#app'
+import { useHead, useAsyncData } from '#app'
 import { UMain, UContainer } from '#components'
 import type { Product } from '#layers/products/app/schemas/product'
 import { useCartStore } from '#layers/cart/app/stores/cart/cart'
@@ -31,10 +30,8 @@ useHead({
 const productsStore = useProductsStore()
 const cartStore = useCartStore()
 
-// Fetch products on mount
-onMounted(async () => {
-  await productsStore.fetchProducts()
-})
+// Fetch products with useAsyncData for SSR
+await useAsyncData('products', () => productsStore.fetchProducts())
 
 function handleAddToCart(product: Product) {
   cartStore.dispatch({ type: 'ADD_ITEM', product })

@@ -1,27 +1,25 @@
 <script setup lang="ts">
-/**
- * CartItem component (Cart Layer)
- *
- * Displays a single cart item with quantity controls using Nuxt UI
- */
-
+import { computed } from 'vue'
 import { UCard, UButton } from '#components'
 import type { CartItem } from '../schemas/cart'
 import { formatCurrency } from '#layers/shared/app/utils/currency'
+import { calculateItemSubtotal } from '../utils/calculations'
 
 interface Props {
   item: CartItem
 }
-
-defineProps<Props>()
-
-const emit = defineEmits<Emits>()
 
 interface Emits {
   (e: 'increment'): void
   (e: 'decrement'): void
   (e: 'remove'): void
 }
+
+const { item } = defineProps<Props>()
+
+const emit = defineEmits<Emits>()
+
+const itemSubtotal = computed(() => calculateItemSubtotal(item.product.price, item.quantity))
 </script>
 
 <template>
@@ -72,7 +70,7 @@ interface Emits {
         </div>
 
         <div class="hidden sm:block min-w-20 text-right text-base font-bold text-gray-900 dark:text-gray-100">
-          {{ formatCurrency(item.subtotal) }}
+          {{ formatCurrency(itemSubtotal) }}
         </div>
 
         <UButton
@@ -90,7 +88,7 @@ interface Emits {
 
     <div class="sm:hidden mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
       <span class="text-sm text-gray-600 dark:text-gray-400">Subtotal:</span>
-      <span class="text-base font-bold text-gray-900 dark:text-gray-100">{{ formatCurrency(item.subtotal) }}</span>
+      <span class="text-base font-bold text-gray-900 dark:text-gray-100">{{ formatCurrency(itemSubtotal) }}</span>
     </div>
   </UCard>
 </template>

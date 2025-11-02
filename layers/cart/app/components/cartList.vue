@@ -1,10 +1,4 @@
 <script setup lang="ts">
-/**
- * CartList component (Cart Layer)
- *
- * Full cart view with items, totals, and checkout using Nuxt UI
- */
-
 import { UCard, UButton, UEmpty, USeparator } from '#components'
 import { useRouter } from 'vue-router'
 import { formatCurrency } from '#layers/shared/app/utils/currency'

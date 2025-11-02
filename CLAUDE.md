@@ -1,226 +1,145 @@
-# CLAUDE.md
+# Layered Nuxt 4 E-commerce App Standards 
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Standards
 
-This is a Nuxt 4 application using TypeScript and Vue 3. The project uses pnpm as the package manager and includes Nuxt UI, Nuxt Image, Nuxt Scripts, Nuxt ESLint modules, and Zod for runtime validation.
+MUST FOLLOW THESE RULES, NO EXCEPTIONS
 
-## Development Commands
+* Stack: Nuxt 4, Vue 3, TypeScript, Pinia, Nuxt UI, Zod
+* Architecture is layer based: `app → cart → products → shared`
+* Auto imports are disabled project wide, always import everything
+* Always use `<script setup lang="ts">`, never Options API
+* Always use layer aliases for cross layer imports (`#layers/...`, `#components`)
+* Use Zod for every external boundary (API, localStorage, cross layer)
+* Dual linting must pass: oxlint is the source of truth, ESLint is for Vue and architecture
+* Stores follow Elm pattern with 4 files
 
-```bash
-# Install dependencies
-pnpm install
+## Project Structure
 
-# Start development server (http://localhost:3000)
-pnpm dev
+Keep this section up to date.
 
-# Build for production
-pnpm build
-
-# Preview production build
-pnpm preview
-
-# Generate static site
-pnpm generate
-
-# Lint code (runs oxlint then ESLint)
-pnpm lint
-
-# Run only oxlint (fast)
-pnpm lint:oxlint
-
-# Run only ESLint
-pnpm lint:eslint
+```text
+layers/
+├── shared/        # UI + utils, no business logic
+├── products/      # product schemas, product store, list/filter
+└── cart/          # cart store, persistence, cart UI
+.nuxt/             # Nuxt build output
+.claude/           # custom slash commands
+nuxt.config.ts     # auto imports disabled here and in each layer
 ```
 
-## Architecture
+Import rules:
 
-### Project Structure
+* Layers can import from `shared`
+* `cart` can import product schemas (contracts), not product stores
+* App can import from any layer
 
-- `app/` - Main application directory
-  - `app.vue` - Root component (currently displays NuxtWelcome)
-- `public/` - Static assets served at root
-- `.nuxt/` - Auto-generated build directory (do not edit)
-- `nuxt.config.ts` - Nuxt configuration
+## Project Commands
 
-### Nuxt Configuration
+Frequently used commands:
 
-The project uses Nuxt 4 with compatibility date set to 2025-07-15. Configured modules:
-- `@nuxt/eslint` - ESLint integration with auto-generated config
-- `@nuxt/image` - Image optimization
-- `@nuxt/scripts` - Third-party script management
-- `@nuxt/ui` - UI component library
+* `pnpm dev`: start dev server
+* `pnpm build`: build for production
+* `pnpm preview`: preview production build
+* `pnpm typecheck`: run TypeScript checks
+* `pnpm lint`: run oxlint and ESLint
+* `pnpm lint:oxlint`: fast checks, main rule set
+* `pnpm lint:eslint`: Vue and architecture rules
+* `pnpm install` and `pnpm add <pkg>`: dependency management
 
-Devtools are enabled for development.
+## Linting Rules
 
-### Linting Configuration (Oxlint + ESLint)
+You must keep linting consistent.
 
-This project uses a **dual-linting setup** for optimal performance and coverage:
+1. oxlint rules live in `.oxlintrc.json` and are the single source of truth
+2. ESLint rules live in `eslint.config.mjs` and add Vue, architecture, and project specific checks
+3. `eslint-plugin-oxlint` prevents overlap
+4. If you add a general rule, add it to oxlint
+5. If you add a Vue or architecture rule, add it to ESLint
+6. Never define the same rule in both files
 
-#### Oxlint (Primary - Fast)
-- **Purpose**: Fast, native-speed linting for common issues
-- **Configuration**: `.oxlintrc.json`
-- **Categories enabled**: correctness (error), suspicious (warn), pedantic (warn), style (warn)
-- **Speed**: 50-100x faster than ESLint
-- **Run via**: `pnpm lint:oxlint` or first in `pnpm lint`
+## Development Workflow
 
-#### ESLint (Secondary - Custom Rules)
-- **Purpose**: Advanced rules that oxlint doesn't support
-- **Configuration**: `eslint.config.mjs` (extends `.nuxt/eslint.config.mjs`)
-- **Critical custom rules**:
-  - `import-boundaries/no-restricted-paths` - Enforces feature-based architecture
-  - `vue/no-undef-components` - Catches missing component imports (critical since auto-imports are disabled)
-  - Complex Vue component rules (block order, naming conventions, etc.)
-  - Code quality rules (complexity, max-depth, no-magic-numbers)
-- **Integration**: `eslint-plugin-oxlint` automatically disables ESLint rules that overlap with oxlint
-- **Run via**: `pnpm lint:eslint` or second in `pnpm lint`
+1. Read the layer docs if they exist (`layers/<name>/...`)
+2. Create or update code inside the correct layer
+3. Use explicit imports and layer aliases, do not enable auto imports
+4. Validate external data with Zod at the boundary
+5. Run `pnpm typecheck` and `pnpm lint`
+6. If the change affects runtime behavior, run `pnpm dev` locally and test the page
+7. Commit only after both linting steps pass
 
-#### Linting Workflow
-```bash
-# Recommended: Run both linters sequentially
-pnpm lint  # oxlint (fast) → ESLint (custom rules)
+## Store Pattern
 
-# Or run individually for debugging
-pnpm lint:oxlint  # Quick check
-pnpm lint:eslint  # Deep analysis
+All Pinia stores follow Elm style.
+
+```text
+stores/{feature}/
+  {feature}.ts         # Pinia integration
+  {feature}Model.ts    # state + message types + initial state
+  {feature}Update.ts   # pure reducer (model, msg) => newModel
+  {feature}Effects.ts  # side effects (api, localStorage)
 ```
 
-**Important**: Oxlint runs FIRST for speed, then ESLint checks additional rules. The `eslint-plugin-oxlint` integration prevents duplicate checking by disabling ESLint rules that oxlint already covers.
+Rules:
 
-### TypeScript Configuration
+* Components dispatch messages
+* `{feature}Update.ts` is always pure
+* Effects handle side work
+* Always return new objects in reducers so Vue can track changes
 
-TypeScript uses project references pointing to auto-generated configs in `.nuxt/`:
-- `tsconfig.app.json` - App-side TypeScript config
-- `tsconfig.server.json` - Server-side TypeScript config
-- `tsconfig.shared.json` - Shared TypeScript config
-- `tsconfig.node.json` - Node environment config
+## Schema and Validation
 
-### Runtime Validation with Zod
+Use Zod for all data contracts.
 
-This project uses **Zod** for runtime data validation, providing an additional layer of type safety beyond TypeScript's compile-time checks.
+* Define schemas in the layer that owns the data
+* Validate on API response
+* Validate on localStorage read
+* Validate on cross layer data transfer
+* Export types from the schema with `z.infer`
 
-#### Why Zod?
-- **Runtime Safety**: TypeScript types are erased at runtime; Zod validates actual data
-- **Data Integrity**: Protects against corrupted localStorage, malicious input, and malformed API responses
-- **Single Source of Truth**: Types are inferred from schemas, keeping validation and types in sync
-- **Better Error Messages**: Detailed validation errors for debugging
+This keeps runtime and TypeScript in sync.
 
-#### Schema Locations
-Schemas are co-located with their features:
-- `app/shared/schemas/` - Shared schemas (Product, ProductCategory)
-- `app/features/*/schemas/` - Feature-specific schemas (Cart, Filters)
+## Imports and Auto Imports
 
-#### Usage Patterns
+This project disables auto imports in `nuxt.config.ts` for the main app and for layers.
 
-**Defining Schemas:**
-```typescript
-import { z } from 'zod'
-
-export const ProductSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1).max(200),
-  price: z.number().int().positive(),
-  // ... more fields
+```ts
+export default defineNuxtConfig({
+  components: { dirs: [] },
+  imports: { autoImport: false },
 })
-
-// Infer TypeScript type from schema
-export type Product = z.infer<typeof ProductSchema>
 ```
 
-**Validating Data:**
-```typescript
-// Safe parsing (returns success/error)
-const result = ProductSchema.safeParse(data)
-if (result.success) {
-  const validProduct = result.data
-} else {
-  console.error('Validation failed:', result.error.errors)
-}
+So you must:
 
-// Direct parsing (throws on error)
-const validProduct = ProductSchema.parse(data)
-```
+* Import every Vue/Nuxt composable manually
+* Import every component manually
+* Use full layer aliases for cross layer imports
+* Use relative imports only inside the same layer
 
-**Validated Storage:**
-```typescript
-import { getValidatedItem } from '~/utils/storage'
-import { CartItemSchema } from '~/features/cart/schemas/cart'
+## Vue Component Conventions
 
-const items = getValidatedItem('cart', z.array(CartItemSchema))
-// Returns validated data or null if invalid
-```
+* `<script setup lang="ts">` only
+* Typed `defineProps` and `defineEmits`
+* Use `defineModel()` for `v-model` cases
+* Use kebab case in templates for props and emits
+* Use PascalCase for component names
+* Import UI from `#components` or from the correct layer
 
-#### Current Validation Coverage
-- ✅ **Product data**: IDs, prices, stock, ratings, categories
-- ✅ **Cart data**: Item quantities, subtotals, localStorage hydration
-- ✅ **Filter inputs**: Search queries, price ranges, rating bounds
-- ✅ **API responses**: Prepared for future API integration
-- ✅ **Store actions**: Cart add/update operations validated
 
-#### Best Practices
-1. **Always validate external data**: localStorage, API responses, user input
-2. **Use schemas for types**: Import types from schema files, not separate type files
-3. **Validate early**: Check data at boundaries (storage, API, user input)
-4. **Handle errors gracefully**: Use `safeParse` and provide user feedback
-5. **Document constraints**: Add error messages to schema rules
+## Documentation and Tools
 
-#### Type Migration
-Legacy type files (`app/types/product.ts`, `app/features/*/types/`) now re-export from schemas for backward compatibility. New code should import directly from schema files:
+* General architecture: `ARCHITECTURE.md`
+* Quick reference for features: layer specific `claude.md` files
+* Custom slash commands: `.claude/commands/` (`/new-page`, `/new-component`, `/new-api`, `/check`, `/commit`)
+* Use these commands before writing your own scaffolding scripts
 
-```typescript
-// ✅ Preferred (schema + type)
-import { ProductSchema, type Product } from '~/shared/schemas/product'
+## Key Principles
 
-// ⚠️ Legacy (type only, no validation)
-import type { Product } from '~/types/product'
-```
-
-## CRITICAL: Auto-Imports Are DISABLED
-
-**This project has auto-imports disabled in `nuxt.config.ts`:**
-- ALL imports must be explicit (Vue composables, Nuxt composables, components)
-- Components MUST be manually imported in `<script setup>`
-- Use `import { ref, computed } from 'vue'` instead of assuming auto-imports
-- Use `import { useRouter } from 'vue-router'` explicitly
-
-This is a deliberate choice for better code clarity and IDE support.
-
-## Code Style Guidelines
-
-- **Module System**: ES Modules only (type: "module" in package.json)
-- **TypeScript**: All new files should use TypeScript (.ts/.vue)
-- **Vue**: Use Composition API with `<script setup>` syntax
-- **Imports**: Always explicit - no auto-imports
-- **Linting**: Run `pnpm lint` to check code with oxlint and ESLint
-- **Components**: PascalCase for component names
-
-## Nuxt Conventions
-
-When adding new functionality, follow Nuxt's file-based conventions:
-
-- **Pages**: Create files in `pages/` directory for file-based routing
-- **Components**: Place in `components/` directory (manually import)
-- **Composables**: Place in `composables/` directory (manually import)
-- **Layouts**: Create in `layouts/` directory
-- **Middleware**: Add to `middleware/` directory
-- **Plugins**: Place in `plugins/` directory
-- **Server API**: Create endpoints in `server/api/` directory
-- **Utils**: Utility functions go in `utils/` directory
-
-All of these directories will be auto-created when needed.
-
-## Testing
-
-Currently no testing framework is configured. When adding tests:
-- Consider Vitest for unit tests (Vue/Nuxt recommended)
-- Consider Playwright for e2e tests
-- Add test scripts to package.json
-
-## Common Issues & Gotchas
-
-1. **Auto-imports disabled**: Remember to manually import everything
-2. **Dev server port**: Default is http://localhost:3000
-3. **Build cache**: If something seems wrong, try deleting `.nuxt/` directory
-4. **Package manager**: Use `pnpm` not `npm` or `yarn`
-5. **TypeScript configs**: Don't edit files in `.nuxt/` - they're auto-generated
+1. Explicit over magic
+2. Layers are features
+3. One way dependency flow
+4. Pure reducers in stores
+5. Validate all boundaries
+6. Dual linting always
+7. TypeScript everywhere

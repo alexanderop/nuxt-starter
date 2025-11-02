@@ -80,11 +80,15 @@ export const useProductsStore = defineStore('products', () => {
     dispatch,
 
     // Convenience methods for common actions
-    setFilter: (filter: typeof currentFilter.value) =>
-      dispatch({ type: 'SET_FILTER', filter }),
-    setSort: (sort: typeof currentSort.value) =>
-      dispatch({ type: 'SET_SORT', sort }),
-    resetFilter: () => dispatch({ type: 'RESET_FILTER' }),
+    setFilter: (filter: typeof currentFilter.value) => {
+      dispatch({ type: 'SET_FILTER', filter })
+    },
+    setSort: (sort: typeof currentSort.value) => {
+      dispatch({ type: 'SET_SORT', sort })
+    },
+    resetFilter: () => {
+      dispatch({ type: 'RESET_FILTER' })
+    },
 
     // Side effect trigger
     fetchProducts,

@@ -1,7 +1,6 @@
 // @ts-check
 import withNuxt from './.nuxt/eslint.config.mjs'
 import oxlint from 'eslint-plugin-oxlint'
-import { SHARED_DISABLED_RULES } from './lint-config.js'
 
 export default withNuxt().append(
   // Layer-based architecture
@@ -81,6 +80,9 @@ export default withNuxt().append(
 
       // Detect unused refs
       'vue/no-unused-refs': 'error',
+
+      // Prevent async operations in computed properties
+      'vue/no-async-in-computed-properties': 'error',
     },
   },
 
@@ -110,14 +112,8 @@ export default withNuxt().append(
       'no-eval': 'error',
       'no-implied-eval': 'error',
 
-      // Prevent magic numbers (except common ones)
-      'no-magic-numbers': ['error', {
-        detectObjects: false,
-        enforceConst: true,
-        ignore: [-1, 0, 1, 2],
-        ignoreArrayIndexes: true,
-        ignoreDefaultValues: true,
-      }],
+      // Note: no-magic-numbers is disabled in .oxlintrc.json (too strict)
+      // Don't enable it here - let .oxlintrc.json be the single source of truth
 
       'no-new-func': 'error',
       'no-param-reassign': 'error',
@@ -137,7 +133,6 @@ export default withNuxt().append(
     rules: {
       'max-depth': 'off', // Test setup can be more nested
       'no-await-in-loop': 'off', // Sequential operations are legitimate in tests
-      'no-magic-numbers': 'off',
       'ts/explicit-function-return-type': 'off',
     },
   },
@@ -155,27 +150,15 @@ export default withNuxt().append(
     files: ['app/**/stores/**/*.ts', 'layers/**/app/stores/**/*.ts'],
     rules: {
       'max-lines-per-function': 'off', // Store setup functions are naturally longer
-      'no-magic-numbers': 'off', // Allow magic numbers in stores for array operations, etc.
     },
   },
 
-  // Relaxed rules for config files
-  {
-    files: ['*.config.*', '*.config.mjs', '*.config.ts', 'eslint.config.mjs'],
-    rules: {
-      'no-magic-numbers': 'off', // Config files often have numeric literals
-    },
-  },
+  // Config files may need relaxed rules in the future
+  // (currently no exceptions needed)
 
   // Oxlint integration - disable ESLint rules that oxlint already checks
-  // This must come AFTER all other configs to properly override rules
+  // This MUST come AFTER all other configs to properly disable overlapping rules
+  // The plugin reads .oxlintrc.json and auto-disables ESLint rules that oxlint covers
+  // This makes .oxlintrc.json the single source of truth - no manual duplication needed
   ...oxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
-
-  // Final overrides - shared disabled rules from lint-config.js
-  // These preferences should not be changed by oxlint
-  {
-    rules: {
-      ...SHARED_DISABLED_RULES,
-    },
-  },
 )
