@@ -195,7 +195,7 @@ export default defineEventHandler((event) => {
 
   // Filter by minimum rating
   if (minRating !== undefined) {
-    filteredProducts = filteredProducts.filter(product => product.rating >= minRating)
+    filteredProducts = filteredProducts.filter(product => product.rating !== undefined && product.rating >= minRating)
   }
 
   // Filter by stock availability

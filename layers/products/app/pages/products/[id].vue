@@ -44,17 +44,36 @@ function goBack() {
   router.push('/')
 }
 
-function addToCart() {
+// Cart event handlers
+function handleAddToCart() {
   if (product.value) {
     cartStore.dispatch({ type: 'ADD_ITEM', product: product.value })
   }
 }
 
-const inCart = computed(() => {
-  if (!product.value) {
-    return false
+function handleIncrement() {
+  if (product.value) {
+    cartStore.dispatch({ type: 'INCREMENT_ITEM', productId: product.value.id })
   }
-  return !!cartStore.state.itemInCart(product.value.id)
+}
+
+function handleDecrement() {
+  if (product.value) {
+    cartStore.dispatch({ type: 'DECREMENT_ITEM', productId: product.value.id })
+  }
+}
+
+function handleRemove() {
+  if (product.value) {
+    cartStore.dispatch({ type: 'REMOVE_ITEM', productId: product.value.id })
+  }
+}
+
+const cartQuantity = computed(() => {
+  if (!product.value) {
+    return 0
+  }
+  return cartStore.state.itemInCart(product.value.id)?.quantity ?? 0
 })
 </script>
 
@@ -105,8 +124,11 @@ class="max-w-full" />
           <div class="p-6 sm:p-8 lg:p-10 bg-gray-50 dark:bg-gray-900/50">
             <ProductDetailInfo
               :product="product"
-              :in-cart="inCart"
-              @add-to-cart="addToCart"
+              :in-cart-quantity="cartQuantity"
+              @add-to-cart="handleAddToCart"
+              @increment="handleIncrement"
+              @decrement="handleDecrement"
+              @remove="handleRemove"
             />
           </div>
         </div>

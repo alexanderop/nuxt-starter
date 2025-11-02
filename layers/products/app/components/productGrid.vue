@@ -4,6 +4,7 @@
  *
  * Displays a grid of product cards using Nuxt UI components
  * Demonstrates composition of ProductCard components
+ * Passes cart quantity and events through to child ProductCard components
  */
 
 import { UEmpty, UIcon } from '#components'
@@ -13,18 +14,19 @@ import ProductCard from './productCard.vue'
 interface Props {
   products: Product[]
   loading?: boolean
-  inCartChecker?: (productId: string) => boolean  // NEW: function to check cart state
+  getCartQuantity?: ((productId: string) => number) | undefined  // Function to get quantity in cart
 }
 
-type Emits = (eventName: 'add-to-cart', product: Product) => void
+interface Emits {
+  (e: 'add-to-cart', product: Product): void
+  (e: 'increment', product: Product): void
+  (e: 'decrement', product: Product): void
+  (e: 'remove', product: Product): void
+}
 
-const { products, loading = false, inCartChecker } = defineProps<Props>()
+const { products, loading = false, getCartQuantity } = defineProps<Props>()
 
 const emit = defineEmits<Emits>()
-
-function handleAddToCart(product: Product) {
-  emit('add-to-cart', product)
-}
 </script>
 
 <template>
@@ -56,8 +58,11 @@ function handleAddToCart(product: Product) {
         v-for="product in products"
         :key="product.id"
         :product="product"
-        :in-cart="inCartChecker ? inCartChecker(product.id) : false"
-        @add-to-cart="handleAddToCart"
+        :in-cart-quantity="getCartQuantity ? getCartQuantity(product.id) : 0"
+        @add-to-cart="emit('add-to-cart', $event)"
+        @increment="emit('increment', $event)"
+        @decrement="emit('decrement', $event)"
+        @remove="emit('remove', $event)"
       />
     </div>
   </div>

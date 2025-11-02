@@ -6,33 +6,30 @@
  * - Category badge
  * - Title, rating, description
  * - Price and stock status
- * - Add to cart functionality
- * - Cart confirmation message
+ * - Add to cart functionality with quantity controls
+ * - Cart status message
  */
 
-import { computed } from 'vue'
 import { UButton, UBadge, UCard } from '#components'
 import type { Product } from '#layers/products/app/schemas/product'
 import { formatCurrency } from '#layers/shared/app/utils/currency'
 
 interface Props {
   product: Product
-  inCart: boolean
+  inCartQuantity?: number
   class?: string
 }
 
-const { product, inCart, class: className = '' } = defineProps<Props>()
+interface Emits {
+  (e: 'add-to-cart'): void
+  (e: 'increment'): void
+  (e: 'decrement'): void
+  (e: 'remove'): void
+}
 
-const emit = defineEmits<{
-  addToCart: []
-}>()
+const { product, inCartQuantity = 0, class: className = '' } = defineProps<Props>()
 
-const addToCartLabel = computed(() => {
-  if (product.stock === 0) {
-    return 'Out of Stock'
-  }
-  return inCart ? 'Add Another to Cart' : 'Add to Cart'
-})
+const emit = defineEmits<Emits>()
 </script>
 
 <template>
@@ -82,24 +79,67 @@ const addToCartLabel = computed(() => {
       />
     </div>
 
+    <!-- Not in cart - show Add to Cart button -->
     <UButton
+      v-if="inCartQuantity === 0"
       type="button"
       block
       size="lg"
       :disabled="product.stock === 0"
-      :label="addToCartLabel"
+      :label="product.stock === 0 ? 'Out of Stock' : 'Add to Cart'"
       icon="i-lucide-shopping-cart"
-      @click="emit('addToCart')"
+      @click="emit('add-to-cart')"
     />
 
-    <UCard
-      v-if="inCart"
-      class="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
+    <!-- In cart - show quantity controls -->
+    <div
+      v-else
+      class="space-y-4"
     >
-      <div class="flex items-center gap-2 text-green-700 dark:text-green-400 font-medium">
-        <span class="text-lg">✓</span>
-        <span>This item is in your cart</span>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 border border-gray-300 dark:border-gray-600 rounded-lg p-2 flex-1">
+          <UButton
+            type="button"
+            icon="i-lucide-minus"
+            size="md"
+            square
+            variant="ghost"
+            color="neutral"
+            aria-label="Decrease quantity"
+            @click="emit('decrement')"
+          />
+          <span class="flex-1 text-center text-xl font-bold text-gray-900 dark:text-gray-100">
+            {{ inCartQuantity }}
+          </span>
+          <UButton
+            type="button"
+            icon="i-lucide-plus"
+            size="md"
+            square
+            variant="ghost"
+            color="neutral"
+            aria-label="Increase quantity"
+            @click="emit('increment')"
+          />
+        </div>
+        <UButton
+          type="button"
+          icon="i-lucide-trash-2"
+          size="lg"
+          square
+          variant="ghost"
+          color="error"
+          aria-label="Remove from cart"
+          @click="emit('remove')"
+        />
       </div>
-    </UCard>
+
+      <UCard class="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
+        <div class="flex items-center gap-2 text-green-700 dark:text-green-400 font-medium">
+          <span class="text-lg">✓</span>
+          <span>{{ inCartQuantity }} {{ inCartQuantity === 1 ? 'item' : 'items' }} in your cart</span>
+        </div>
+      </UCard>
+    </div>
   </div>
 </template>

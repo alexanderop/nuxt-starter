@@ -33,8 +33,25 @@ const cartStore = useCartStore()
 // Fetch products with useAsyncData for SSR
 await useAsyncData('products', () => productsStore.fetchProducts())
 
+// Cart event handlers
 function handleAddToCart(product: Product) {
   cartStore.dispatch({ type: 'ADD_ITEM', product })
+}
+
+function handleIncrement(product: Product) {
+  cartStore.dispatch({ type: 'INCREMENT_ITEM', productId: product.id })
+}
+
+function handleDecrement(product: Product) {
+  cartStore.dispatch({ type: 'DECREMENT_ITEM', productId: product.id })
+}
+
+function handleRemove(product: Product) {
+  cartStore.dispatch({ type: 'REMOVE_ITEM', productId: product.id })
+}
+
+function getCartQuantity(productId: string): number {
+  return cartStore.state.itemInCart(productId)?.quantity ?? 0
 }
 </script>
 
@@ -70,8 +87,11 @@ function handleAddToCart(product: Product) {
           <ProductGrid
             :products="(productsStore.state.filteredProducts as any)"
             :loading="productsStore.state.loading"
-            :in-cart-checker="(productId) => !!cartStore.state.itemInCart(productId)"
+            :get-cart-quantity="getCartQuantity"
             @add-to-cart="handleAddToCart"
+            @increment="handleIncrement"
+            @decrement="handleDecrement"
+            @remove="handleRemove"
           />
         </main>
       </div>

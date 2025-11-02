@@ -19,7 +19,7 @@ interface Props {
   class?: string
 }
 
-const { product, class: _className = '' } = defineProps<Props>()
+const { product, class: className = '' } = defineProps<Props>()
 
 // Multiple product images (currently just using same image, can be extended)
 const images = computed(() => [
