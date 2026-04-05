@@ -1,7 +1,11 @@
 import process from 'node:process'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  vite: {
+    plugins: [tailwindcss()],
+  },
   components: [],
 
   imports: {
@@ -10,7 +14,6 @@ export default defineNuxtConfig({
 
   modules: [
     './modules/security-headers',
-    '@unocss/nuxt',
     '@nuxtjs/html-validator',
     '@nuxt/scripts',
     '@nuxt/a11y',

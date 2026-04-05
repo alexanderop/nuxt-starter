@@ -5,7 +5,7 @@ A minimal Nuxt starter with strong defaults for styling, accessibility, testing,
 It keeps the surface area small while giving you a stronger baseline:
 
 - an accessible app shell
-- a token-driven UnoCSS styling foundation
+- a token-driven Tailwind CSS styling foundation
 - sensible route rules and metadata defaults
 - a reusable security headers module
 - Vite Plus-driven named test projects
@@ -45,7 +45,7 @@ useSeoMeta({
 The starter uses a token-first styling system:
 
 - semantic theme tokens live in `app/assets/main.css`
-- UnoCSS provides the utility layer and shared shortcuts
+- Tailwind CSS provides the utility layer
 - component templates compose layout and state with utilities
 - global CSS is reserved for resets, root variables, and browser-specific behavior
 

@@ -490,15 +490,18 @@ const { slicePath } = usePathUtils()
 
 function useCurrentFolderData(networkState) {
   const folders = ref(null)
-  const currentFolderData = useQuery({
-    query: FOLDER_CURRENT,
-    fetchPolicy: 'network-only',
-    networkState,
-    async result() {
-      await nextTick()
-      folders.scrollTop = 0
+  const currentFolderData = useQuery(
+    {
+      query: FOLDER_CURRENT,
+      fetchPolicy: 'network-only',
+      networkState,
+      async result() {
+        await nextTick()
+        folders.scrollTop = 0
+      },
     },
-  }, {})
+    {},
+  )
 
   return { folders, currentFolderData }
 }
@@ -584,7 +587,7 @@ function useFavoriteFolders(currentFolderData) {
 
 function useHiddenFolders() {
   const showHiddenFolders = ref(localStorage.getItem(SHOW_HIDDEN) === 'true')
-  watch(showHiddenFolders, (value) => {
+  watch(showHiddenFolders, value => {
     if (value) {
       localStorage.setItem(SHOW_HIDDEN, 'true')
     } else {

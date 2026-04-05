@@ -3,7 +3,7 @@ import type { NuxtError } from '#app'
 
 import { clearError } from '#imports'
 
-defineProps<{
+const { error } = defineProps<{
   error: NuxtError
 }>()
 </script>

@@ -51,7 +51,7 @@ Prefer:
 ```ts
 import { SearchParamsSchema } from '#shared/schemas/search'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
   const query = getQuery(event)
   const params = SearchParamsSchema.parse(query)
 
@@ -71,7 +71,7 @@ Prefer:
 ```ts
 import { ERROR_PACKAGE_NOT_FOUND } from '#shared/utils/constants'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
   const name = getRouterParam(event, 'name')
   const pkg = await findPackage(name)
 
@@ -108,7 +108,7 @@ Use `defineCachedEventHandler` for responses that can be cached.
 
 ```ts
 export default defineCachedEventHandler(
-  async (event) => {
+  async event => {
     const name = getRouterParam(event, 'name')
     return await fetchPackageMetadata(name)
   },

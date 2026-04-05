@@ -60,17 +60,17 @@ Separate type imports from value imports using `import type` consistently.
 
 ## Naming Conventions
 
-| Type                | Convention           | Example                   |
-| ------------------- | -------------------- | ------------------------- |
-| Vue components      | PascalCase           | `AppHeader.vue`           |
-| Pages               | kebab-case           | `search-results.vue`      |
-| Composables         | camelCase + `use`    | `useThemePreference.ts`   |
-| Utilities           | camelCase            | `formatDate.ts`           |
-| Server routes       | kebab-case + method  | `search.get.ts`           |
-| Functions           | camelCase            | `parsePackageName`        |
-| Constants           | SCREAMING_SNAKE_CASE | `MAX_RESULTS`             |
-| Types / Interfaces  | PascalCase           | `SearchResponse`          |
-| Enums               | PascalCase           | `SortOrder`               |
+| Type               | Convention           | Example                 |
+| ------------------ | -------------------- | ----------------------- |
+| Vue components     | PascalCase           | `AppHeader.vue`         |
+| Pages              | kebab-case           | `search-results.vue`    |
+| Composables        | camelCase + `use`    | `useThemePreference.ts` |
+| Utilities          | camelCase            | `formatDate.ts`         |
+| Server routes      | kebab-case + method  | `search.get.ts`         |
+| Functions          | camelCase            | `parsePackageName`      |
+| Constants          | SCREAMING_SNAKE_CASE | `MAX_RESULTS`           |
+| Types / Interfaces | PascalCase           | `SearchResponse`        |
+| Enums              | PascalCase           | `SortOrder`             |
 
 ## Type Definitions
 

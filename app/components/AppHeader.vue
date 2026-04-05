@@ -11,10 +11,13 @@ const { locale, locales, t } = useI18n()
 const colorMode = useColorMode()
 
 const localeOptions = computed(() =>
-  locales.value.map(localeOption => ({
-    code: localeOption.code as LocaleCode,
-    label: localeOption.name || localeOption.code,
-  })),
+  locales.value.map(localeOption => {
+    const code: LocaleCode = localeOption.code
+    return {
+      code,
+      label: localeOption.name || localeOption.code,
+    }
+  }),
 )
 
 const homeRoute = { name: 'index' as const }
@@ -42,12 +45,14 @@ function cycleTheme() {
 </script>
 
 <template>
-  <header class="site-header sticky top-0 z-10 border-b border-border shell-surface">
+  <header
+    class="sticky top-0 z-10 border-b border-[var(--border)] backdrop-blur-[18px] bg-[color-mix(in_srgb,var(--bg)_86%,transparent)]"
+  >
     <div
-      class="container flex flex-col items-start justify-center gap-4 py-4 sm:min-h-18 sm:flex-row sm:items-center sm:justify-between sm:py-0"
+      class="mx-auto flex w-[min(1100px,calc(100%-2rem))] flex-col items-start justify-center gap-4 py-4 sm:min-h-[4.5rem] sm:flex-row sm:items-center sm:justify-between sm:py-0"
     >
       <NuxtLink
-        class="inline-flex items-center gap-3 font-semibold tracking-[-0.02em] no-underline text-fg focus-ring rounded-sm"
+        class="inline-flex items-center gap-3 rounded-sm font-semibold tracking-tight text-[var(--fg)] no-underline"
         :to="localePath(homeRoute)"
       >
         <span
@@ -61,18 +66,18 @@ function cycleTheme() {
       <nav aria-label="Primary" class="flex flex-wrap items-center gap-4">
         <NuxtLink
           :to="localePath(homeRoute)"
-          class="text-fg-muted no-underline transition-colors duration-200 hover:text-fg focus-ring rounded-sm"
+          class="rounded-sm text-[var(--fg-muted)] no-underline transition-colors duration-200 hover:text-[var(--fg)]"
         >
           {{ t('nav.home') }}
         </NuxtLink>
         <a
-          class="text-fg-muted no-underline transition-colors duration-200 hover:text-fg focus-ring rounded-sm"
+          class="rounded-sm text-[var(--fg-muted)] no-underline transition-colors duration-200 hover:text-[var(--fg)]"
           href="https://nuxt.com/docs/getting-started/introduction"
         >
           {{ t('nav.docs') }}
         </a>
         <a
-          class="text-fg-muted no-underline transition-colors duration-200 hover:text-fg focus-ring rounded-sm"
+          class="rounded-sm text-[var(--fg-muted)] no-underline transition-colors duration-200 hover:text-[var(--fg)]"
           href="https://github.com/nuxt/nuxt"
         >
           {{ t('nav.nuxt') }}
@@ -85,7 +90,7 @@ function cycleTheme() {
             v-for="localeOption in localeOptions"
             :key="localeOption.code"
             :aria-current="locale === localeOption.code ? 'page' : undefined"
-            class="site-control focus-ring"
+            class="inline-flex min-h-9 items-center justify-center rounded-full border border-[var(--border)] bg-[color-mix(in_srgb,var(--bg-elevated)_88%,transparent)] px-3.5 text-[var(--fg-muted)] no-underline transition-[border-color,color,transform,background-color] duration-200 hover:border-[var(--border-strong)] hover:text-[var(--fg)] hover:-translate-y-px aria-[current=page]:border-[var(--border-strong)] aria-[current=page]:text-[var(--fg)] aria-[current=page]:-translate-y-px"
             :to="localeTarget(localeOption.code)"
           >
             {{ localeOption.label }}
@@ -93,7 +98,11 @@ function cycleTheme() {
         </nav>
 
         <ClientOnly>
-          <button class="site-control focus-ring cursor-pointer" type="button" @click="cycleTheme">
+          <button
+            class="inline-flex min-h-9 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[color-mix(in_srgb,var(--bg-elevated)_88%,transparent)] px-3.5 text-[var(--fg-muted)] transition-[border-color,color,transform,background-color] duration-200 hover:border-[var(--border-strong)] hover:text-[var(--fg)] hover:-translate-y-px"
+            type="button"
+            @click="cycleTheme"
+          >
             {{ t(`theme.${colorMode.preference}`) }}
           </button>
         </ClientOnly>

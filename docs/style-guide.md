@@ -5,8 +5,7 @@ This guide defines how styling should be written in this starter.
 The goal is consistency:
 
 - global CSS owns design tokens and browser-level defaults
-- UnoCSS utilities handle most layout and visual composition
-- shortcuts capture repeated UI patterns
+- Tailwind utilities handle most layout and visual composition
 - local component CSS is rare and intentional
 
 See also [components-guide.md](./components-guide.md) and [composables-guide.md](./composables-guide.md).
@@ -15,10 +14,9 @@ See also [components-guide.md](./components-guide.md) and [composables-guide.md]
 
 Write styles in this order of preference:
 
-1. Reuse an existing Uno shortcut.
-2. Compose utilities directly in the template.
-3. Add or extend a design token.
-4. Add scoped or module CSS only when utilities would make the markup harder to understand.
+1. Compose Tailwind utilities directly in the template.
+2. Add or extend a design token.
+3. Add scoped or module CSS only when utilities would make the markup harder to understand.
 
 This keeps styling centralized, portable, and easy for another agent to extend.
 
@@ -49,6 +47,8 @@ Typical token names:
 
 Do not hardcode design values in many places when they represent a reusable design decision.
 
+Reference tokens in Tailwind via the `@theme` block in `main.css`, which maps CSS variables to Tailwind color utilities like `bg-bg`, `text-fg`, `border-border`.
+
 ## Utilities Over Bespoke Classes
 
 Prefer utility classes for:
@@ -67,9 +67,11 @@ Good:
 
 ```vue
 <template>
-  <section class="rounded-5 border border-border bg-bg-elevated p-5 shadow-[var(--shadow)]">
+  <section
+    class="rounded-[1.25rem] border border-[var(--border)] bg-[color-mix(in_srgb,var(--bg-elevated)_92%,transparent)] p-5 shadow-[var(--shadow)]"
+  >
     <h2 class="m-0 text-xl tracking-[-0.02em]">Title</h2>
-    <p class="mt-2 text-fg-muted">Supporting copy.</p>
+    <p class="mt-2 text-[var(--fg-muted)]">Supporting copy.</p>
   </section>
 </template>
 ```
@@ -86,32 +88,6 @@ Avoid:
 ```
 
 when the custom classes only wrap ordinary spacing, color, and border declarations.
-
-## Shortcuts
-
-Use Uno shortcuts for patterns that repeat and carry semantic meaning.
-
-A shortcut is appropriate when all of these are true:
-
-- the class bundle appears in multiple places
-- it represents one UI role
-- changing it in one place should update every instance
-
-Good shortcut candidates:
-
-- primary button
-- secondary button
-- surface card
-- focus treatment
-- shell surface
-- compact pill
-- navigation control
-
-Bad shortcut candidates:
-
-- a one-off hero section
-- a class bundle used once on one page
-- highly product-specific layout that is unlikely to repeat
 
 ## Global CSS Responsibilities
 
@@ -174,14 +150,20 @@ Even then, keep the local CSS narrow and component-owned.
 
 ```vue
 <template>
-  <article class="surface-card">
+  <article
+    class="rounded-[1.25rem] border border-[var(--border)] bg-[color-mix(in_srgb,var(--bg-elevated)_92%,transparent)] p-5 shadow-[var(--shadow)]"
+  >
     <header class="flex items-start justify-between gap-4">
       <div>
         <h2 class="m-0 text-lg tracking-[-0.02em]">Card Title</h2>
-        <p class="mt-2 mb-0 text-fg-muted">Small description for the card.</p>
+        <p class="mt-2 mb-0 text-[var(--fg-muted)]">Small description for the card.</p>
       </div>
 
-      <button type="button" class="site-control focus-ring cursor-pointer" aria-pressed="false">
+      <button
+        type="button"
+        class="inline-flex min-h-9 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[color-mix(in_srgb,var(--bg-elevated)_88%,transparent)] px-3.5 text-[var(--fg-muted)] transition-[border-color,color,transform,background-color] duration-200 hover:border-[var(--border-strong)] hover:text-[var(--fg)] hover:-translate-y-px"
+        aria-pressed="false"
+      >
         Action
       </button>
     </header>
@@ -193,7 +175,6 @@ Why this is preferred:
 
 - the layout is visible in the template
 - token-backed colors stay consistent
-- the shared button role is reused through a shortcut
 - focus behavior is explicit
 
 ## RTL And Bidirectional Support
@@ -204,22 +185,16 @@ This ensures the layout works correctly in both left-to-right and right-to-left 
 
 Prefer logical utilities:
 
-| Physical (avoid)  | Logical (prefer) | Meaning                    |
-| ----------------- | ----------------- | -------------------------- |
-| `pl-*`            | `ps-*`            | padding-inline-start       |
-| `pr-*`            | `pe-*`            | padding-inline-end         |
-| `ml-*`            | `ms-*`            | margin-inline-start        |
-| `mr-*`            | `me-*`            | margin-inline-end          |
-| `left-*`          | `inset-is-*`      | inset-inline-start         |
-| `right-*`         | `inset-ie-*`      | inset-inline-end           |
-| `rounded-l-*`     | `rounded-is-*`    | border-start-start-radius  |
-| `rounded-r-*`     | `rounded-ie-*`    | border-start-end-radius    |
-| `text-left`       | `text-start`      | text-align: start          |
-| `text-right`      | `text-end`        | text-align: end            |
+| Physical (avoid) | Logical (prefer) | Meaning              |
+| ---------------- | ---------------- | -------------------- |
+| `pl-*`           | `ps-*`           | padding-inline-start |
+| `pr-*`           | `pe-*`           | padding-inline-end   |
+| `ml-*`           | `ms-*`           | margin-inline-start  |
+| `mr-*`           | `me-*`           | margin-inline-end    |
+| `text-left`      | `text-start`     | text-align: start    |
+| `text-right`     | `text-end`       | text-align: end      |
 
 Physical properties are acceptable for layout that is inherently visual and must not flip, such as horizontal scroll positioning or fixed decorative elements.
-
-For icons that should mirror in RTL contexts, add a `rtl-flip` class.
 
 ## Cursor Conventions
 
@@ -267,7 +242,6 @@ Avoid these:
 - large custom class hierarchies for simple layout
 - styling that duplicates design tokens instead of consuming them
 - local CSS for ordinary spacing and alignment
-- shortcuts created for a single call site
 - physical directional properties when logical equivalents exist
 - `cursor: pointer` on buttons and other non-link interactive elements
 - hardcoded breakpoint-based font sizes when `clamp()` would be simpler
@@ -277,8 +251,7 @@ Avoid these:
 Before adding new styling, ask:
 
 1. Can existing utilities express this clearly?
-2. Is there already a shortcut for this role?
-3. Is the real problem missing tokens rather than missing classes?
-4. Would local CSS make the component easier or harder to maintain?
+2. Is the real problem missing tokens rather than missing classes?
+3. Would local CSS make the component easier or harder to maintain?
 
 If you follow that order, the styling system stays small and predictable.

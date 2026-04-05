@@ -16,13 +16,13 @@ const nuxtTestOverrides = {
     pwaAssets: { disabled: true },
   },
   ogImage: { enabled: false },
-} as Record<string, unknown>
+}
 
 export default defineConfig({
   run: {
     tasks: {
       'check:lint': {
-        command: 'vp lint && vp fmt --check',
+        command: 'vp lint && eslint . && vp fmt --check',
       },
       'check:typecheck': {
         command: 'nuxt prepare && vue-tsc --noEmit',
@@ -58,6 +58,26 @@ export default defineConfig({
     rules: {
       'no-console': 'warn',
       'typescript/consistent-type-imports': 'error',
+
+      // Limit cyclomatic complexity per function
+      'complexity': ['warn', { max: 10 }],
+      // Ban nested ternaries for readability
+      'no-nested-ternary': 'error',
+      // Prefer early returns over else blocks
+      'no-else-return': 'warn',
+
+      // Ban `as Type` assertions — use type guards or proper typing
+      'typescript/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
+      // Ban `any` — use `unknown` and narrow instead
+      'typescript/no-explicit-any': 'error',
+
+      // Vue 3.5+ destructured props
+      'vue/define-props-destructuring': 'error',
+
+      // Better vitest assertions
+      'vitest/prefer-to-be-falsy': 'warn',
+      'vitest/prefer-to-be-truthy': 'warn',
+      'vitest/prefer-to-be-object': 'warn',
     },
     overrides: [
       {
@@ -88,7 +108,7 @@ export default defineConfig({
     quoteProps: 'consistent',
   },
   staged: {
-    '*.{js,ts,mjs,cjs,vue}': 'vp lint --fix',
+    '*.{js,ts,mjs,cjs,vue}': 'vp lint --fix && eslint --fix',
     '*.{js,ts,mjs,cjs,vue,json,yml,md,html,css}': 'vp fmt',
   },
   test: {
@@ -118,7 +138,7 @@ export default defineConfig({
             environmentOptions: {
               nuxt: {
                 rootDir: nuxtFixtureRoot,
-                overrides: nuxtTestOverrides as never,
+                overrides: nuxtTestOverrides,
               },
             },
             browser: {
