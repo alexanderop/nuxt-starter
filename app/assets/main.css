@@ -1,0 +1,149 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light dark;
+  --bg: oklch(0.98 0.004 250);
+  --bg-subtle: oklch(0.96 0.006 250);
+  --bg-muted: oklch(0.93 0.008 250);
+  --bg-elevated: oklch(1 0 0);
+  --fg: oklch(0.18 0.01 250);
+  --fg-muted: oklch(0.44 0.014 250);
+  --border: oklch(0.89 0.01 250);
+  --border-strong: oklch(0.8 0.015 250);
+  --accent: oklch(0.58 0.16 250);
+  --accent-strong: oklch(0.5 0.17 250);
+  --shadow: 0 20px 60px oklch(0.25 0.03 250 / 0.08);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: oklch(0.16 0.01 250);
+  --bg-subtle: oklch(0.21 0.012 250);
+  --bg-muted: oklch(0.26 0.013 250);
+  --bg-elevated: oklch(0.24 0.014 250);
+  --fg: oklch(0.96 0.004 250);
+  --fg-muted: oklch(0.74 0.012 250);
+  --border: oklch(0.31 0.012 250);
+  --border-strong: oklch(0.42 0.015 250);
+  --accent: oklch(0.77 0.11 240);
+  --accent-strong: oklch(0.7 0.14 240);
+  --shadow: 0 20px 60px oklch(0.02 0 0 / 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    color-scheme: dark;
+    --bg: oklch(0.16 0.01 250);
+    --bg-subtle: oklch(0.21 0.012 250);
+    --bg-muted: oklch(0.26 0.013 250);
+    --bg-elevated: oklch(0.24 0.014 250);
+    --fg: oklch(0.96 0.004 250);
+    --fg-muted: oklch(0.74 0.012 250);
+    --border: oklch(0.31 0.012 250);
+    --border-strong: oklch(0.42 0.015 250);
+    --accent: oklch(0.77 0.11 240);
+    --accent-strong: oklch(0.7 0.14 240);
+    --shadow: 0 20px 60px oklch(0.02 0 0 / 0.35);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light dark;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at top, oklch(0.88 0.05 235 / 0.22), transparent 35%),
+    linear-gradient(180deg, var(--bg-subtle) 0%, var(--bg) 24rem);
+  color: var(--fg);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.6;
+}
+
+@media (prefers-contrast: more) {
+  :root[data-theme='light'] {
+    --fg: oklch(0.1 0 0);
+    --fg-muted: oklch(0.28 0 0);
+    --border: oklch(0.58 0 0);
+    --border-strong: oklch(0.4 0 0);
+  }
+
+  :root[data-theme='dark'],
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --fg: oklch(1 0 0);
+    --fg-muted: oklch(0.82 0 0);
+    --border: oklch(0.6 0 0);
+    --border-strong: oklch(0.78 0 0);
+  }
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+:focus-visible,
+:-moz-focusring {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 3px !important;
+}
+
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+* {
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#__nuxt {
+  min-height: 100vh;
+}

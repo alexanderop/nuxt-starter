@@ -1,0 +1,21 @@
+packages:
+  - .
+
+ignoreWorkspaceRootCheck: true
+
+ignoreDepScripts: true
+
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - core-js
+  - esbuild
+  - unrs-resolver
+  - vue-demi
+
+overrides:
+  vite: npm:@voidzero-dev/vite-plus-core@0.1.12
+  vitest: npm:@voidzero-dev/vite-plus-test@0.1.12
+
+savePrefix: ''
+
+shellEmulator: true
